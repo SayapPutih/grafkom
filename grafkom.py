@@ -1,8 +1,8 @@
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
+import os
 from random import randint
-
 
 width, height = 500, 500                               # window size
 field_width, field_height = 50, 50                     # internal resolution
@@ -10,6 +10,7 @@ snake = [(20, 20)] # snake list of (x, y) positions
 snake_dir = (1, 0) # snake movement direction
 interval = 200 # update interval in milliseconds
 food = [] # food list of type (x, y)
+skor = 0
 
 def refresh2d_custom(width, height, internal_width, internal_height):
     glViewport(0, 0, width, height)
@@ -26,29 +27,19 @@ def draw_rect(x, y, width, height):
     glVertex2f(x + width, y + height)                  # top right point
     glVertex2f(x, y + height)                          # top left point
     glEnd()                                            # done drawing a rectangle
-   
-def draw():                                            # draw is called all the time
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) # clear the screen
-    glLoadIdentity()                                   # reset position
-    refresh2d_custom(width, height, field_width, field_height)
-   
-    # TODO draw things
-   
-    glutSwapBuffers()                                  # important for double buffering
+
+def bar():
+    global skor
+    #Font Score
+    glColor3f( 1, 1, 1 )
+    glRasterPos(10,10 )
+    for p in str(skor):
+        glutBitmapCharacter( GLUT_BITMAP_TIMES_ROMAN_24, ord(p) )
 
 def draw_snake():
     glColor3f(1.0, 1.0, 1.0)  # set color to white
     for x, y in snake:        # go through each (x, y) entry
         draw_rect(x, y, 1, 1) # draw it at (x, y) with width=1 and height=1
-
-def draw():                                            # draw is called all the time
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) # clear the screen
-    glLoadIdentity()                                   # reset position
-    refresh2d_custom(width, height, field_width, field_height)
-   
-    draw_snake()                                       # draw the snake
-   
-    glutSwapBuffers()                                  # important for double bufferin
 
 
 def vec_add(p1, p2):
@@ -70,23 +61,24 @@ def controller(key, x, y):
         
 
 def update(value):  
+    global skor
     # move snake      
     snake.insert(0, vec_add(snake[0], snake_dir))      
     snake.pop()                                        
-   
-# let the snake eat the food
+    
+    # ular memakan makanannya
     (hx, hy) = snake[0]          # get the snake's head x and y position
     for x, y in food:            # go through the food list
         if hx == x and hy == y:  # is the head where the food is?
             snake.append((x, y)) # make the snake longer
             food.remove((x, y))  # remove the food
-   
+            skor += 1
     # spawn food
     r = randint(0, 20)                                
     if r == 0:
         x, y = randint(0, field_width), randint(0, field_height) 
         food.append((x, y))
-   
+    
     glutTimerFunc(interval, update, 0)                 
 
 def draw_food():
@@ -100,15 +92,10 @@ def draw():
     refresh2d_custom(width, height, field_width, field_height)
    
     draw_food()                                      
-    draw_snake()                                       
+    draw_snake()
+    bar()                                       
    
     glutSwapBuffers()                                  
-
-(hx, hy) = snake[0]          
-for x, y in food:            
-    if hx == x and hy == y:  
-        snake.append((x, y))
-        food.remove((x, y)) 
 
 # initialization
 glutInit()                                             
